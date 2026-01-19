@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="beamGlow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDE68A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FBBF24;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#beamGradient)" stroke="#D97706" stroke-width="2"/>
+  
+  <!-- Inner glow -->
+  <circle cx="50" cy="50" r="40" fill="url(#beamGlow)" opacity="0.3"/>
+  
+  <!-- Beam logo - stylized B with rays -->
+  <g transform="translate(50, 50)">
+    <!-- Central beam rays -->
+    <path d="M0 -30 L5 -15 L0 -18 L-5 -15 Z" fill="#FFFFFF" opacity="0.9"/>
+    <path d="M0 30 L5 15 L0 18 L-5 15 Z" fill="#FFFFFF" opacity="0.9"/>
+    <path d="M-30 0 L-15 5 L-18 0 L-15 -5 Z" fill="#FFFFFF" opacity="0.9"/>
+    <path d="M30 0 L15 5 L18 0 L15 -5 Z" fill="#FFFFFF" opacity="0.9"/>
+    
+    <!-- Diagonal rays -->
+    <path d="M-22 -22 L-10 -12 L-14 -14 L-12 -10 Z" fill="#FFFFFF" opacity="0.7"/>
+    <path d="M22 -22 L12 -10 L14 -14 L10 -12 Z" fill="#FFFFFF" opacity="0.7"/>
+    <path d="M-22 22 L-10 12 L-14 14 L-12 10 Z" fill="#FFFFFF" opacity="0.7"/>
+    <path d="M22 22 L12 10 L14 14 L10 12 Z" fill="#FFFFFF" opacity="0.7"/>
+    
+    <!-- Center hexagon -->
+    <polygon points="0,-12 10,-6 10,6 0,12 -10,6 -10,-6" fill="#FFFFFF" stroke="#D97706" stroke-width="1"/>
+    
+    <!-- Inner detail -->
+    <circle cx="0" cy="0" r="4" fill="#F59E0B"/>
+  </g>
+</svg>
