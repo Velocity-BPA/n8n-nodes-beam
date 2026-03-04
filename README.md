@@ -8,348 +8,198 @@
 >
 > For licensing information, visit https://velobpa.com/licensing or contact licensing@velobpa.com.
 
----
+This n8n community node provides comprehensive integration with the Beam blockchain ecosystem, offering 6 core resources for wallet management, transaction processing, marketplace interactions, gaming operations, and DeFi protocols. Build powerful automation workflows with Beam's privacy-focused blockchain infrastructure.
 
-A comprehensive n8n community node for the [Beam blockchain](https://www.onbeam.com/) - a gaming-focused Avalanche subnet backed by Merit Circle DAO. This node provides extensive integration capabilities for wallet management, NFT operations, gaming ecosystems, DeFi, and cross-chain bridging.
-
-![n8n](https://img.shields.io/badge/n8n-community--node-orange)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
+![n8n Community Node](https://img.shields.io/badge/n8n-Community%20Node-blue)
 ![License](https://img.shields.io/badge/license-BSL--1.1-blue)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
+![Beam](https://img.shields.io/badge/Beam-Blockchain-purple)
+![Privacy](https://img.shields.io/badge/Privacy-Focused-green)
+![DeFi](https://img.shields.io/badge/DeFi-Ready-orange)
 
 ## Features
 
-- **17 Resource Types** with 150+ operations
-- **Wallet Management**: Balance checks, transfers, wrap/unwrap BEAM
-- **NFT Operations**: Get info, transfer, batch transfer, burn, verify ownership
-- **Sphere Marketplace**: Listings, offers, sales, price history
-- **Gaming Ecosystem**: Games, players, inventory, achievements, leaderboards
-- **DeFi**: DEX swaps, liquidity pools, staking
-- **Cross-Chain Bridge**: Ethereum, Avalanche bridge support
-- **Smart Contracts**: Read/write, deploy, events
-- **Real-Time Triggers**: Block events, transfers, contract events
+- **Wallet Operations** - Create, manage, and monitor Beam wallets with full balance tracking
+- **Transaction Management** - Send, receive, and query transactions with privacy features
+- **Marketplace Integration** - Access SphereMarketplace for NFT and asset trading
+- **Gaming Support** - Integrate with Beam's gaming ecosystem and reward systems
+- **DeFi Protocols** - Connect to decentralized finance applications and yield farming
+- **Privacy Controls** - Leverage Beam's confidential transactions and privacy features
+- **Real-time Monitoring** - Track blockchain events and transaction confirmations
+- **Multi-network Support** - Works with Beam mainnet and testnet environments
 
 ## Installation
 
 ### Community Nodes (Recommended)
 
-1. Go to **Settings** > **Community Nodes**
-2. Select **Install**
-3. Enter `n8n-nodes-beam` and click **Install**
+1. Open n8n
+2. Go to **Settings** → **Community Nodes**
+3. Click **Install a community node**
+4. Enter `n8n-nodes-beam`
+5. Click **Install**
 
 ### Manual Installation
 
 ```bash
-cd ~/.n8n/nodes
+cd ~/.n8n
 npm install n8n-nodes-beam
 ```
 
 ### Development Installation
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Velocity-BPA/n8n-nodes-beam.git
 cd n8n-nodes-beam
-
-# 2. Install dependencies
-pnpm install
-
-# 3. Build the project
-pnpm build
-
-# 4. Create symlink to n8n custom nodes directory
-# For Linux/macOS:
+npm install
+npm run build
 mkdir -p ~/.n8n/custom
 ln -s $(pwd) ~/.n8n/custom/n8n-nodes-beam
-
-# For Windows (run as Administrator):
-# mklink /D %USERPROFILE%\.n8n\custom\n8n-nodes-beam %CD%
-
-# 5. Restart n8n
 n8n start
 ```
 
 ## Credentials Setup
 
-### Beam Network Credentials
-
-| Field | Description |
-|-------|-------------|
-| Network | Select mainnet, testnet, or custom |
-| RPC URL | Custom RPC endpoint (optional) |
-| Private Key | Wallet private key for signing transactions |
-| Chain ID | Auto-populated (4337 mainnet, 13337 testnet) |
-
-### Beam API Credentials
-
-| Field | Description |
-|-------|-------------|
-| API Endpoint | Beam API URL |
-| API Key | Your Beam API key |
-| Project ID | Your project identifier |
-
-### Sphere Marketplace Credentials
-
-| Field | Description |
-|-------|-------------|
-| API Endpoint | Sphere API URL |
-| API Key | Your Sphere API key |
-| Publisher ID | Your publisher identifier |
+| Field | Description | Required |
+|-------|-------------|----------|
+| API Key | Your Beam API access key | Yes |
+| Environment | Network environment (mainnet/testnet) | Yes |
+| Wallet Address | Default wallet address for operations | No |
+| Node URL | Custom Beam node URL (optional) | No |
 
 ## Resources & Operations
 
-### Wallet
-- Get BEAM Balance, Get Wrapped BEAM Balance, Get Token Balances
-- Get Wallet NFTs, Transfer BEAM, Transfer Token
-- Get Transaction History, Validate Address, Wrap/Unwrap BEAM
+### 1. Wallet
 
-### NFT
-- Get NFT Info, Get NFT Metadata, Get NFTs by Owner/Collection
-- Transfer NFT, Batch Transfer, Get History, Verify Ownership, Burn
+| Operation | Description |
+|-----------|-------------|
+| Create | Generate a new Beam wallet |
+| Get Balance | Retrieve wallet balance and assets |
+| Get Info | Get wallet details and metadata |
+| Import | Import existing wallet from seed phrase |
+| List Transactions | Get wallet transaction history |
+| Export Keys | Export wallet private keys securely |
 
-### Collection
-- Get Collection Info/Stats/NFTs/Activity
-- Create/Update Collection, Search, Get Floor Price/Volume/Holders
+### 2. Transaction
 
-### Marketplace (Sphere)
-- Get/Create/Cancel Listing, Buy NFT
-- Get Active Listings, Listings by User/Collection
-- Get Recent Sales, Price History, Make/Accept/Cancel Offer
+| Operation | Description |
+|-----------|-------------|
+| Send | Send Beam or assets to another address |
+| Get | Retrieve transaction details by ID |
+| List | Query transactions with filters |
+| Cancel | Cancel pending transactions |
+| Estimate Fee | Calculate transaction fees |
+| Sign | Sign transaction data |
+| Broadcast | Broadcast signed transaction |
 
-### Minting
-- Mint NFT, Batch Mint, Get Mint Status
-- Prepare Mint, Get Fees, Create/Purchase Drop
+### 3. Unknown
 
-### Gaming
-- Get Game Info/Stats, Get Available Games
-- Get Player Profile/Inventory/Achievements
-- Get Leaderboard, Execute Game Action, Claim Rewards
+| Operation | Description |
+|-----------|-------------|
+| Query | Execute custom blockchain queries |
+| Monitor | Track blockchain events |
+| Validate | Validate addresses and transactions |
 
-### Player
-- Get Player Info/Stats/NFTs/History/Ranking
-- Link Account, Update Profile, Get Achievements/Rewards
+### 4. SphereMarketplace
 
-### Asset (In-Game)
-- Get Asset Info/Stats/Attributes/History/Value
-- Upgrade Asset, Combine Assets, List/Delist Asset
+| Operation | Description |
+|-----------|-------------|
+| List Assets | Browse available NFTs and assets |
+| Get Asset | Get detailed asset information |
+| Create Listing | List assets for sale |
+| Buy Asset | Purchase marketplace assets |
+| Cancel Listing | Remove asset listings |
+| Get Collections | Browse NFT collections |
+| Search | Search marketplace items |
 
-### Merit Circle
-- Get MC Token Balance, Staking Info/Rewards
-- Stake/Unstake MC, Claim Rewards
-- Get Governance Info, DAO Stats, Vote on Proposal
+### 5. Gaming
 
-### Smart Contract
-- Read/Write Contract, Deploy Contract
-- Encode/Decode Functions, Get Events, Estimate Gas
+| Operation | Description |
+|-----------|-------------|
+| Get Profile | Retrieve gaming profile data |
+| Get Achievements | List player achievements |
+| Get Leaderboard | Access game leaderboards |
+| Claim Rewards | Claim gaming rewards |
+| Get Game Stats | Retrieve game statistics |
+| Join Tournament | Register for tournaments |
 
-### Bridge
-- Get Bridge Info, Supported Assets
-- Bridge from/to Ethereum, Bridge from Avalanche
-- Get Bridge Status/History, Estimate Fees
+### 6. DeFi
 
-### DEX
-- Get Swap Quote, Execute Swap
-- Get Pool Info, Add/Remove Liquidity
-- Get LP Balance, Supported Pairs, Price Impact
-
-### Staking
-- Get Staking Info, Stake/Unstake BEAM
-- Get Validators, Delegate, Get Rewards/APY
-
-### Block
-- Get Block (by number/hash), Get Latest Block
-- Get Block Transactions/Time, Get Finalized Block
-
-### Transaction
-- Send Transaction, Get Transaction/Receipt/Status
-- Estimate Gas, Get Gas Price, Speed Up/Cancel Transaction
-
-### Events
-- Get Events (filtered), Decode Event
-- Get Events by Contract, Transfer/Approval Events
-
-### Utility
-- Convert Units, Encode/Decode ABI
-- Sign/Verify Message, Hash Data, Validate Address, Get Network Status
-
-## Trigger Node
-
-The **Beam Trigger** node monitors real-time events:
-
-- BEAM Received/Sent
-- Token Transfers
-- NFT Transfers
-- New Blocks
-- Contract Events
+| Operation | Description |
+|-----------|-------------|
+| Get Pools | List available liquidity pools |
+| Add Liquidity | Provide liquidity to pools |
+| Remove Liquidity | Withdraw from liquidity pools |
+| Swap Tokens | Execute token swaps |
+| Get Rates | Get current exchange rates |
+| Stake Tokens | Stake tokens for rewards |
+| Unstake | Withdraw staked tokens |
+| Claim Yields | Claim farming rewards |
 
 ## Usage Examples
 
-### Check Wallet Balance
-
 ```javascript
-// Get BEAM balance for an address
-Resource: Wallet
-Operation: Get BEAM Balance
-Wallet Address: 0x1234...
+// Send Beam tokens
+{
+  "operation": "send",
+  "amount": 100,
+  "to": "beam1qyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqs7a4r6s",
+  "comment": "Payment for services",
+  "fee": 1000
+}
 ```
 
-### Transfer NFT
-
 ```javascript
-// Transfer an NFT to another address
-Resource: NFT
-Operation: Transfer NFT
-Contract Address: 0xNFT...
-Token ID: 123
-To Address: 0xRecipient...
+// Get wallet balance
+{
+  "operation": "getBalance",
+  "walletAddress": "beam1qyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqs7a4r6s",
+  "includeAssets": true
+}
 ```
 
-### Create Marketplace Listing
-
 ```javascript
-// List an NFT for sale on Sphere
-Resource: Marketplace
-Operation: Create Listing
-Contract Address: 0xNFT...
-Token ID: 123
-Price: 10.5
+// List marketplace assets
+{
+  "operation": "listAssets",
+  "category": "nft",
+  "priceRange": {
+    "min": 10,
+    "max": 1000
+  },
+  "sortBy": "price_asc"
+}
 ```
 
-### Execute Token Swap
-
 ```javascript
-// Swap tokens on BeamSwap DEX
-Resource: DEX
-Operation: Execute Swap
-Token In: 0xTokenA...
-Token Out: 0xTokenB...
-Amount In: 100
-Slippage Tolerance: 0.5
+// Add liquidity to DeFi pool
+{
+  "operation": "addLiquidity",
+  "poolId": "beam-usdc",
+  "amountA": 500,
+  "amountB": 1000,
+  "slippage": 0.5
+}
 ```
-
-## Beam Blockchain Concepts
-
-### BEAM Token
-The native token of the Beam network, used for gas fees and transactions.
-
-### Avalanche Subnet
-Beam is built as an Avalanche subnet, providing high throughput and low latency transactions.
-
-### Merit Circle DAO
-The gaming DAO that backs and governs the Beam ecosystem.
-
-### Sphere Marketplace
-The official NFT marketplace for the Beam ecosystem.
-
-### Gaming Focus
-Purpose-built for Web3 gaming with player profiles, in-game assets, and cross-game interoperability.
-
-## Networks
-
-| Network | Chain ID | RPC URL |
-|---------|----------|---------|
-| Beam Mainnet | 4337 | https://build.onbeam.com/rpc |
-| Beam Testnet | 13337 | https://build.onbeam.com/rpc/testnet |
-
-## Contract Addresses (Mainnet)
-
-| Contract | Address |
-|----------|---------|
-| Wrapped BEAM | `0x76BF5E7d2Bcb06b1444C0a2742780051D8D0E304` |
-| Sphere Marketplace | `0x8A3749936E723325C6b645a0901470cD9E790B94` |
-| BeamSwap Router | `0x965B104e250648d01d4B3b72BaC751Cde809D29E` |
-| MC Token | `0x949D48EcA67b17269629c7194F4b727d4Ef9E5d6` |
 
 ## Error Handling
 
-The node provides descriptive error messages for common issues:
-
-- **Invalid Address**: Validates Ethereum-style addresses
-- **Insufficient Balance**: Checks balance before transactions
-- **Network Errors**: Handles RPC connection issues
-- **Contract Errors**: Decodes revert reasons when available
-
-## Security Best Practices
-
-- **Never share private keys** - Store credentials securely in n8n
-- **Use testnet first** - Test workflows on Beam testnet before mainnet
-- **Validate addresses** - Always verify recipient addresses
-- **Set gas limits** - Configure appropriate gas limits for transactions
-- **Monitor transactions** - Use triggers to track transaction status
+| Error | Description | Solution |
+|-------|-------------|----------|
+| Invalid API Key | Authentication failed | Verify API key in credentials |
+| Insufficient Balance | Not enough funds for transaction | Check wallet balance before sending |
+| Network Timeout | Request timed out | Check network connection and node status |
+| Invalid Address | Wallet address format incorrect | Validate Beam address format |
+| Transaction Failed | Blockchain rejected transaction | Check fee amount and network congestion |
+| Rate Limited | Too many API requests | Implement delays between requests |
 
 ## Development
 
-### Project Structure
-
-```
-n8n-nodes-beam/
-├── credentials/
-│   ├── BeamNetwork.credentials.ts
-│   ├── BeamApi.credentials.ts
-│   └── SphereMarketplace.credentials.ts
-├── nodes/
-│   └── Beam/
-│       ├── Beam.node.ts
-│       ├── BeamTrigger.node.ts
-│       ├── beam.svg
-│       ├── actions/
-│       ├── transport/
-│       ├── constants/
-│       └── utils/
-├── test/
-│   ├── unit/
-│   └── integration/
-├── scripts/
-│   ├── test.sh
-│   ├── build.sh
-│   └── install-local.sh
-├── package.json
-├── tsconfig.json
-├── jest.config.js
-├── LICENSE
-├── COMMERCIAL_LICENSE.md
-└── LICENSING_FAQ.md
-```
-
-### Build Commands
-
 ```bash
-# Install dependencies
-pnpm install
-
-# Build the project
-pnpm build
-
-# Run development mode (watch)
-pnpm dev
-
-# Lint code
-pnpm lint
-
-# Fix linting issues
-pnpm lintfix
-
-# Format code
-pnpm format
-
-# Run tests
-pnpm test
-
-# Run tests with coverage
-pnpm test:coverage
-```
-
-### Testing
-
-```bash
-# Run unit tests
-pnpm test
-
-# Run tests with coverage report
-pnpm test:coverage
-
-# Run tests in watch mode
-pnpm test:watch
+npm install
+npm run build
+npm test
+npm run lint
+npm run dev
 ```
 
 ## Author
@@ -366,33 +216,24 @@ This n8n community node is licensed under the **Business Source License 1.1**.
 Permitted for personal, educational, research, and internal business use.
 
 ### Commercial Use
-Use of this node within any SaaS, PaaS, hosted platform, managed service,
-or paid automation offering requires a commercial license.
+Use of this node within any SaaS, PaaS, hosted platform, managed service, or paid automation offering requires a commercial license.
 
-For licensing inquiries:
-**licensing@velobpa.com**
+For licensing inquiries: **licensing@velobpa.com**
 
 See [LICENSE](LICENSE), [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md), and [LICENSING_FAQ.md](LICENSING_FAQ.md) for details.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are welcome! Please ensure:
 
-Please ensure your code passes linting and tests before submitting.
+1. Code follows existing style conventions
+2. All tests pass (`npm test`)
+3. Linting passes (`npm run lint`)
+4. Documentation is updated for new features
+5. Commit messages are descriptive
 
 ## Support
 
-- [GitHub Issues](https://github.com/Velocity-BPA/n8n-nodes-beam/issues)
-- [Beam Documentation](https://docs.onbeam.com/)
-- [n8n Community](https://community.n8n.io/)
-
-## Acknowledgments
-
-- [Beam](https://www.onbeam.com/) - Gaming-focused blockchain
-- [Merit Circle](https://meritcircle.io/) - Gaming DAO
-- [Sphere](https://sphere.onbeam.com/) - NFT Marketplace
-- [n8n](https://n8n.io/) - Workflow automation platform
+- **Issues**: [GitHub Issues](https://github.com/Velocity-BPA/n8n-nodes-beam/issues)
+- **Beam Documentation**: [Beam Developer Docs](https://beam.mw/docs)
+- **Community**: [Beam Discord](https://discord.gg/beam)
