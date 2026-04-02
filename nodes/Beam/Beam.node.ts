@@ -57,8 +57,16 @@ export class Beam implements INodeType {
             value: 'transaction',
           },
           {
-            name: 'unknown',
-            value: 'unknown',
+            name: 'Address',
+            value: 'address',
+          },
+          {
+            name: 'Asset',
+            value: 'asset',
+          },
+          {
+            name: 'Node',
+            value: 'node',
           },
           {
             name: 'SphereMarketplace',
@@ -81,30 +89,14 @@ export class Beam implements INodeType {
   name: 'operation',
   type: 'options',
   noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['wallet'],
-    },
-  },
+  displayOptions: { show: { resource: ['wallet'] } },
   options: [
-    {
-      name: 'Create Wallet',
-      value: 'createWallet',
-      description: 'Create a new wallet',
-      action: 'Create wallet',
-    },
-    {
-      name: 'Get Wallet',
-      value: 'getWallet',
-      description: 'Get wallet details by address',
-      action: 'Get wallet',
-    },
-    {
-      name: 'Get Wallet Balance',
-      value: 'getWalletBalance',
-      description: 'Get wallet balance',
-      action: 'Get wallet balance',
-    },
+    { name: 'Create Wallet', value: 'createWallet', description: 'Create a new Beam wallet', action: 'Create a wallet' },
+    { name: 'Get Wallet', value: 'getWallet', description: 'Get wallet information', action: 'Get a wallet' },
+    { name: 'Get Wallet Balance', value: 'getWalletBalance', description: 'Get wallet balance', action: 'Get wallet balance' },
+    { name: 'Update Wallet', value: 'updateWallet', description: 'Update wallet settings', action: 'Update a wallet' },
+    { name: 'Delete Wallet', value: 'deleteWallet', description: 'Delete a wallet', action: 'Delete a wallet' },
+    { name: 'List Wallets', value: 'listWallets', description: 'List all wallets', action: 'List wallets' },
     {
       name: 'Get Wallet Transactions',
       value: 'getWalletTransactions',
@@ -117,37 +109,51 @@ export class Beam implements INodeType {
       description: 'Transfer tokens from wallet',
       action: 'Transfer tokens',
     },
-    {
-      name: 'Delete Wallet',
-      value: 'deleteWallet',
-      description: 'Remove wallet from management',
-      action: 'Delete wallet',
-    },
   ],
   default: 'createWallet',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['transaction'],
-    },
-  },
-  options: [
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: { show: { resource: ['transaction'] } },
+	options: [
+		{
+			name: 'Send Transaction',
+			value: 'sendTransaction',
+			description: 'Send BEAM tokens',
+			action: 'Send transaction'
+		},
+		{
+			name: 'Get Transaction',
+			value: 'getTransaction',
+			description: 'Get transaction details by ID',
+			action: 'Get transaction'
+		},
+		{
+			name: 'Get Transaction History',
+			value: 'getTransactionHistory',
+			description: 'Get transaction history for a wallet',
+			action: 'Get transaction history'
+		},
+		{
+			name: 'Estimate Transaction Fee',
+			value: 'estimateTransactionFee',
+			description: 'Estimate transaction fee for a transfer',
+			action: 'Estimate transaction fee'
+		},
+		{
+			name: 'Get Transaction Status',
+			value: 'getTransactionStatus',
+			description: 'Get current status of a transaction',
+			action: 'Get transaction status'
+		},
     {
       name: 'Create Transaction',
       value: 'createTransaction',
       description: 'Create and broadcast a new transaction',
       action: 'Create transaction',
-    },
-    {
-      name: 'Get Transaction',
-      value: 'getTransaction',
-      description: 'Get transaction details by hash',
-      action: 'Get transaction',
     },
     {
       name: 'Get All Transactions',
@@ -161,14 +167,82 @@ export class Beam implements INodeType {
       description: 'Wait for transaction confirmation',
       action: 'Confirm transaction',
     },
-    {
-      name: 'Estimate Transaction Fee',
-      value: 'estimateTransactionFee',
-      description: 'Estimate gas fees for a transaction',
-      action: 'Estimate transaction fee',
-    },
+	],
+	default: 'sendTransaction',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: { show: { resource: ['address'] } },
+  options: [
+    { name: 'Generate Address', value: 'generateAddress', description: 'Generate new receiving address', action: 'Generate address' },
+    { name: 'Get Address', value: 'getAddress', description: 'Get address information', action: 'Get address' },
+    { name: 'List Addresses', value: 'listAddresses', description: 'List wallet addresses', action: 'List addresses' },
+    { name: 'Update Address', value: 'updateAddress', description: 'Update address properties', action: 'Update address' },
+    { name: 'Expire Address', value: 'expireAddress', description: 'Expire an address', action: 'Expire address' },
   ],
-  default: 'createTransaction',
+  default: 'generateAddress',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: { show: { resource: ['asset'] } },
+  options: [
+    { name: 'Create Asset', value: 'createAsset', description: 'Create new confidential asset', action: 'Create asset' },
+    { name: 'Get Asset', value: 'getAsset', description: 'Get asset information', action: 'Get asset' },
+    { name: 'List Assets', value: 'listAssets', description: 'List all assets', action: 'List assets' },
+    { name: 'Mint Asset', value: 'mintAsset', description: 'Mint additional asset tokens', action: 'Mint asset' },
+    { name: 'Burn Asset', value: 'burnAsset', description: 'Burn asset tokens', action: 'Burn asset' }
+  ],
+  default: 'createAsset',
+},
+{
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['node'],
+		},
+	},
+	options: [
+		{
+			name: 'Get Node Status',
+			value: 'getNodeStatus',
+			description: 'Get node status and sync information',
+			action: 'Get node status',
+		},
+		{
+			name: 'Get Node Peers',
+			value: 'getNodePeers',
+			description: 'Get connected peers',
+			action: 'Get node peers',
+		},
+		{
+			name: 'Get Blocks',
+			value: 'getBlocks',
+			description: 'Get recent blocks',
+			action: 'Get blocks',
+		},
+		{
+			name: 'Get Block',
+			value: 'getBlock',
+			description: 'Get specific block',
+			action: 'Get block',
+		},
+		{
+			name: 'Get Mining Info',
+			value: 'getMiningInfo',
+			description: 'Get mining information',
+			action: 'Get mining info',
+		},
+	],
+	default: 'getNodeStatus',
 },
 {
   displayName: 'Operation',
@@ -322,6 +396,25 @@ export class Beam implements INodeType {
 },
       // Parameter definitions
 {
+  displayName: 'Seed',
+  name: 'seed',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['wallet'], operation: ['createWallet'] } },
+  default: '',
+  description: 'Wallet seed phrase for creation',
+},
+{
+  displayName: 'Password',
+  name: 'password',
+  type: 'string',
+  typeOptions: { password: true },
+  required: true,
+  displayOptions: { show: { resource: ['wallet'], operation: ['createWallet'] } },
+  default: '',
+  description: 'Password to secure the wallet',
+},
+{
   displayName: 'Network',
   name: 'network',
   type: 'string',
@@ -350,6 +443,15 @@ export class Beam implements INodeType {
   description: 'The type of wallet to create',
 },
 {
+  displayName: 'Wallet ID',
+  name: 'walletId',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['wallet'], operation: ['getWallet', 'getWalletBalance', 'updateWallet', 'deleteWallet'] } },
+  default: '',
+  description: 'The ID of the wallet',
+},
+{
   displayName: 'Address',
   name: 'address',
   type: 'string',
@@ -357,11 +459,20 @@ export class Beam implements INodeType {
   displayOptions: {
     show: {
       resource: ['wallet'],
-      operation: ['getWallet', 'getWalletBalance', 'getWalletTransactions', 'transferTokens', 'deleteWallet'],
+      operation: ['getWalletTransactions', 'transferTokens'],
     },
   },
   default: '',
   description: 'The wallet address',
+},
+{
+  displayName: 'Settings',
+  name: 'settings',
+  type: 'json',
+  required: true,
+  displayOptions: { show: { resource: ['wallet'], operation: ['updateWallet'] } },
+  default: '{}',
+  description: 'Wallet settings to update as JSON object',
 },
 {
   displayName: 'Token Address',
@@ -385,11 +496,11 @@ export class Beam implements INodeType {
   displayOptions: {
     show: {
       resource: ['wallet'],
-      operation: ['getWalletTransactions'],
+      operation: ['listWallets', 'getWalletTransactions'],
     },
   },
   default: 10,
-  description: 'Maximum number of transactions to return',
+  description: 'Maximum number of results to return',
 },
 {
   displayName: 'Offset',
@@ -399,11 +510,11 @@ export class Beam implements INodeType {
   displayOptions: {
     show: {
       resource: ['wallet'],
-      operation: ['getWalletTransactions'],
+      operation: ['listWallets', 'getWalletTransactions'],
     },
   },
   default: 0,
-  description: 'Number of transactions to skip',
+  description: 'Number of results to skip',
 },
 {
   displayName: 'To',
@@ -434,6 +545,104 @@ export class Beam implements INodeType {
   description: 'The amount to transfer',
 },
 {
+	displayName: 'Wallet ID',
+	name: 'walletId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['sendTransaction', 'getTransactionHistory']
+		}
+	},
+	default: '',
+	description: 'The ID of the wallet to use for the transaction'
+},
+{
+	displayName: 'Amount',
+	name: 'amount',
+	type: 'number',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['sendTransaction', 'estimateTransactionFee']
+		}
+	},
+	default: 0,
+	description: 'The amount of BEAM tokens to send (in BEAM units)'
+},
+{
+	displayName: 'Recipient',
+	name: 'recipient',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['sendTransaction', 'estimateTransactionFee']
+		}
+	},
+	default: '',
+	description: 'The recipient wallet address'
+},
+{
+	displayName: 'Fee',
+	name: 'fee',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['sendTransaction']
+		}
+	},
+	default: 0,
+	description: 'Custom transaction fee (optional, will use network default if not specified)'
+},
+{
+	displayName: 'Transaction ID',
+	name: 'txId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['getTransaction', 'getTransactionStatus']
+		}
+	},
+	default: '',
+	description: 'The transaction ID to query'
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['getTransactionHistory']
+		}
+	},
+	default: 100,
+	description: 'Maximum number of transactions to return'
+},
+{
+	displayName: 'Offset',
+	name: 'offset',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['transaction'],
+			operation: ['getTransactionHistory']
+		}
+	},
+	default: 0,
+	description: 'Number of transactions to skip'
+},
+{
   displayName: 'From Address',
   name: 'from',
   type: 'string',
@@ -462,20 +671,6 @@ export class Beam implements INodeType {
   description: 'The recipient address',
 },
 {
-  displayName: 'Amount',
-  name: 'amount',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['transaction'],
-      operation: ['createTransaction', 'estimateTransactionFee'],
-    },
-  },
-  default: '',
-  description: 'Amount to transfer (in wei for Ethereum)',
-},
-{
   displayName: 'Data',
   name: 'data',
   type: 'string',
@@ -496,7 +691,7 @@ export class Beam implements INodeType {
   displayOptions: {
     show: {
       resource: ['transaction'],
-      operation: ['getTransaction', 'confirmTransaction'],
+      operation: ['confirmTransaction'],
     },
   },
   default: '',
@@ -514,32 +709,6 @@ export class Beam implements INodeType {
   },
   default: '',
   description: 'Filter transactions by address',
-},
-{
-  displayName: 'Limit',
-  name: 'limit',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['transaction'],
-      operation: ['getAllTransactions'],
-    },
-  },
-  default: 10,
-  description: 'Maximum number of transactions to return',
-},
-{
-  displayName: 'Offset',
-  name: 'offset',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['transaction'],
-      operation: ['getAllTransactions'],
-    },
-  },
-  default: 0,
-  description: 'Number of transactions to skip',
 },
 {
   displayName: 'Status',
@@ -584,6 +753,131 @@ export class Beam implements INodeType {
   },
   default: 1,
   description: 'Number of confirmations to wait for',
+},
+{
+  displayName: 'Wallet ID',
+  name: 'walletId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['address'],
+      operation: ['generateAddress'],
+    },
+  },
+  default: '',
+  description: 'The ID of the wallet to generate the address for',
+},
+{
+  displayName: 'Expiration',
+  name: 'expiration',
+  type: 'number',
+  displayOptions: {
+    show: {
+      resource: ['address'],
+      operation: ['generateAddress'],
+    },
+  },
+  default: 3600,
+  description: 'Address expiration time in seconds',
+},
+{
+  displayName: 'Address ID',
+  name: 'addressId',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['address'],
+      operation: ['getAddress', 'updateAddress', 'expireAddress'],
+    },
+  },
+  default: '',
+  description: 'The ID of the address',
+},
+{
+  displayName: 'Active Only',
+  name: 'active',
+  type: 'boolean',
+  displayOptions: {
+    show: {
+      resource: ['address'],
+      operation: ['listAddresses'],
+    },
+  },
+  default: true,
+  description: 'Whether to return only active addresses',
+},
+{
+  displayName: 'Label',
+  name: 'label',
+  type: 'string',
+  displayOptions: {
+    show: {
+      resource: ['address'],
+      operation: ['updateAddress'],
+    },
+  },
+  default: '',
+  description: 'Label for the address',
+},
+{
+  displayName: 'Asset Metadata',
+  name: 'metadata',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['asset'], operation: ['createAsset'] } },
+  default: '',
+  description: 'Metadata for the asset',
+},
+{
+  displayName: 'Asset ID',
+  name: 'assetId',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['asset'], operation: ['getAsset', 'mintAsset', 'burnAsset'] } },
+  default: '',
+  description: 'The unique identifier of the asset',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	default: 10,
+	description: 'Number of blocks to retrieve',
+	displayOptions: {
+		show: {
+			resource: ['node'],
+			operation: ['getBlocks'],
+		},
+	},
+},
+{
+	displayName: 'Height',
+	name: 'height',
+	type: 'number',
+	default: 0,
+	description: 'Block height to start from (optional)',
+	displayOptions: {
+		show: {
+			resource: ['node'],
+			operation: ['getBlocks'],
+		},
+	},
+},
+{
+	displayName: 'Block Height',
+	name: 'blockHeight',
+	type: 'number',
+	required: true,
+	default: 1,
+	description: 'Height of the specific block to retrieve',
+	displayOptions: {
+		show: {
+			resource: ['node'],
+			operation: ['getBlock'],
+		},
+	},
 },
 {
   displayName: 'Token ID',
@@ -695,32 +989,6 @@ export class Beam implements INodeType {
   description: 'Maximum price filter',
 },
 {
-  displayName: 'Limit',
-  name: 'limit',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['sphereMarketplace'],
-      operation: ['getAllListings'],
-    },
-  },
-  default: 50,
-  description: 'Maximum number of listings to return',
-},
-{
-  displayName: 'Offset',
-  name: 'offset',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['sphereMarketplace'],
-      operation: ['getAllListings'],
-    },
-  },
-  default: 0,
-  description: 'Number of listings to skip',
-},
-{
   displayName: 'Description',
   name: 'description',
   type: 'string',
@@ -794,20 +1062,6 @@ export class Beam implements INodeType {
   description: 'The type of game asset',
 },
 {
-  displayName: 'Metadata',
-  name: 'metadata',
-  type: 'json',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['createGameAsset'],
-    },
-  },
-  default: '{}',
-  description: 'Asset metadata including name, description, and properties',
-},
-{
   displayName: 'Owner',
   name: 'owner',
   type: 'string',
@@ -820,118 +1074,6 @@ export class Beam implements INodeType {
   },
   default: '',
   description: 'The owner address of the asset',
-},
-{
-  displayName: 'Asset ID',
-  name: 'assetId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['getGameAsset', 'updateGameAsset'],
-    },
-  },
-  default: '',
-  description: 'The ID of the game asset',
-},
-{
-  displayName: 'Game ID',
-  name: 'gameId',
-  type: 'string',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['getAllGameAssets'],
-    },
-  },
-  default: '',
-  description: 'Filter assets by game ID',
-},
-{
-  displayName: 'Player ID',
-  name: 'playerId',
-  type: 'string',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['getAllGameAssets'],
-    },
-  },
-  default: '',
-  description: 'Filter assets by player ID',
-},
-{
-  displayName: 'Limit',
-  name: 'limit',
-  type: 'number',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['getAllGameAssets', 'getLeaderboard'],
-    },
-  },
-  default: 50,
-  description: 'Maximum number of results to return',
-},
-{
-  displayName: 'Offset',
-  name: 'offset',
-  type: 'number',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['getAllGameAssets'],
-    },
-  },
-  default: 0,
-  description: 'Number of results to skip',
-},
-{
-  displayName: 'Metadata',
-  name: 'metadata',
-  type: 'json',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['updateGameAsset'],
-    },
-  },
-  default: '{}',
-  description: 'Updated asset metadata',
-},
-{
-  displayName: 'Stats',
-  name: 'stats',
-  type: 'json',
-  required: false,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['updateGameAsset'],
-    },
-  },
-  default: '{}',
-  description: 'Updated asset stats',
-},
-{
-  displayName: 'Player ID',
-  name: 'playerId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['gaming'],
-      operation: ['createAchievement'],
-    },
-  },
-  default: '',
-  description: 'The ID of the player receiving the achievement',
 },
 {
   displayName: 'Achievement ID',
@@ -948,18 +1090,18 @@ export class Beam implements INodeType {
   description: 'The ID of the achievement to award',
 },
 {
-  displayName: 'Game ID',
-  name: 'gameId',
+  displayName: 'Player ID',
+  name: 'playerId',
   type: 'string',
   required: true,
   displayOptions: {
     show: {
       resource: ['gaming'],
-      operation: ['createAchievement', 'getLeaderboard'],
+      operation: ['createAchievement'],
     },
   },
   default: '',
-  description: 'The ID of the game',
+  description: 'The ID of the player receiving the achievement',
 },
 {
   displayName: 'Metric',
@@ -994,34 +1136,6 @@ export class Beam implements INodeType {
   description: 'The metric to rank by',
 },
 {
-  displayName: 'Amount',
-  name: 'amount',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['stakeTokens'],
-    },
-  },
-  default: '',
-  description: 'Amount of tokens to stake',
-},
-{
-  displayName: 'Token Address',
-  name: 'tokenAddress',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['stakeTokens'],
-    },
-  },
-  default: '',
-  description: 'Address of the token to stake',
-},
-{
   displayName: 'Protocol',
   name: 'protocol',
   type: 'string',
@@ -1034,20 +1148,6 @@ export class Beam implements INodeType {
   },
   default: '',
   description: 'DeFi protocol name',
-},
-{
-  displayName: 'Duration',
-  name: 'duration',
-  type: 'number',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['stakeTokens'],
-    },
-  },
-  default: 0,
-  description: 'Staking duration in days',
 },
 {
   displayName: 'Stake ID',
@@ -1064,20 +1164,6 @@ export class Beam implements INodeType {
   description: 'ID of the staking position',
 },
 {
-  displayName: 'Amount to Unstake',
-  name: 'amount',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['unstakeTokens'],
-    },
-  },
-  default: '',
-  description: 'Amount of tokens to unstake',
-},
-{
   displayName: 'User Address',
   name: 'userAddress',
   type: 'string',
@@ -1090,58 +1176,6 @@ export class Beam implements INodeType {
   },
   default: '',
   description: 'User wallet address',
-},
-{
-  displayName: 'Limit',
-  name: 'limit',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['getAllStakes', 'getLiquidityPools'],
-    },
-  },
-  default: 100,
-  description: 'Maximum number of results to return',
-},
-{
-  displayName: 'Offset',
-  name: 'offset',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['getAllStakes', 'getLiquidityPools'],
-    },
-  },
-  default: 0,
-  description: 'Number of results to skip',
-},
-{
-  displayName: 'Token A',
-  name: 'tokenA',
-  type: 'string',
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['getLiquidityPools'],
-    },
-  },
-  default: '',
-  description: 'First token address for liquidity pool filtering',
-},
-{
-  displayName: 'Token B',
-  name: 'tokenB',
-  type: 'string',
-  displayOptions: {
-    show: {
-      resource: ['deFi'],
-      operation: ['getLiquidityPools'],
-    },
-  },
-  default: '',
-  description: 'Second token address for liquidity pool filtering',
 },
 {
   displayName: 'Pool ID',
@@ -1197,8 +1231,12 @@ export class Beam implements INodeType {
         return [await executeWalletOperations.call(this, items)];
       case 'transaction':
         return [await executeTransactionOperations.call(this, items)];
-      case 'unknown':
-        return [await executeunknownOperations.call(this, items)];
+      case 'address':
+        return [await executeAddressOperations.call(this, items)];
+      case 'asset':
+        return [await executeAssetOperations.call(this, items)];
+      case 'node':
+        return [await executeNodeOperations.call(this, items)];
       case 'sphereMarketplace':
         return [await executeSphereMarketplaceOperations.call(this, items)];
       case 'gaming':
@@ -1222,51 +1260,55 @@ async function executeWalletOperations(
   const returnData: INodeExecutionData[] = [];
   const operation = this.getNodeParameter('operation', 0) as string;
   const credentials = await this.getCredentials('beamApi') as any;
-
+  
   for (let i = 0; i < items.length; i++) {
     try {
       let result: any;
-      const baseUrl = credentials.baseUrl || 'https://api.beam.eco/v1';
-
+      const baseUrl = credentials.baseUrl || 'https://api.beam.mw/v1';
+      
       switch (operation) {
         case 'createWallet': {
+          const seed = this.getNodeParameter('seed', i) as string;
+          const password = this.getNodeParameter('password', i) as string;
           const network = this.getNodeParameter('network', i) as string;
           const type = this.getNodeParameter('type', i) as string;
-
+          
           const options: any = {
             method: 'POST',
-            url: `${baseUrl}/wallets`,
+            url: `${baseUrl}/wallet/create`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
-            json: true,
             body: {
+              seed,
+              password,
               network,
               type,
             },
+            json: true,
           };
-
+          
           result = await this.helpers.httpRequest(options) as any;
           break;
         }
-
+        
         case 'getWallet': {
-          const address = this.getNodeParameter('address', i) as string;
-
+          const walletId = this.getNodeParameter('walletId', i) as string;
+          
           const options: any = {
             method: 'GET',
-            url: `${baseUrl}/wallets/${address}`,
+            url: `${baseUrl}/wallet/${walletId}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
             json: true,
           };
-
+          
           result = await this.helpers.httpRequest(options) as any;
           break;
         }
-
+        
         case 'getWalletBalance': {
           const address = this.getNodeParameter('address', i) as string;
           const tokenAddress = this.getNodeParameter('tokenAddress', i) as string;
@@ -1292,6 +1334,62 @@ async function executeWalletOperations(
             json: true,
           };
 
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+        
+        case 'updateWallet': {
+          const walletId = this.getNodeParameter('walletId', i) as string;
+          const settings = this.getNodeParameter('settings', i) as string;
+          
+          const options: any = {
+            method: 'PUT',
+            url: `${baseUrl}/wallet/${walletId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.parse(settings),
+            json: true,
+          };
+          
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+        
+        case 'deleteWallet': {
+          const walletId = this.getNodeParameter('walletId', i) as string;
+          
+          const options: any = {
+            method: 'DELETE',
+            url: `${baseUrl}/wallet/${walletId}`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+            },
+            json: true,
+          };
+          
+          result = await this.helpers.httpRequest(options) as any;
+          break;
+        }
+        
+        case 'listWallets': {
+          const limit = this.getNodeParameter('limit', i) as number;
+          const offset = this.getNodeParameter('offset', i) as number;
+          
+          const options: any = {
+            method: 'GET',
+            url: `${baseUrl}/wallet`,
+            headers: {
+              'Authorization': `Bearer ${credentials.apiKey}`,
+            },
+            qs: {
+              limit,
+              offset,
+            },
+            json: true,
+          };
+          
           result = await this.helpers.httpRequest(options) as any;
           break;
         }
@@ -1354,27 +1452,11 @@ async function executeWalletOperations(
           result = await this.helpers.httpRequest(options) as any;
           break;
         }
-
-        case 'deleteWallet': {
-          const address = this.getNodeParameter('address', i) as string;
-
-          const options: any = {
-            method: 'DELETE',
-            url: `${baseUrl}/wallets/${address}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
+        
         default:
           throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
       }
-
+      
       returnData.push({ json: result, pairedItem: { item: i } });
     } catch (error: any) {
       if (this.continueOnFail()) {
@@ -1384,23 +1466,133 @@ async function executeWalletOperations(
       }
     }
   }
-
+  
   return returnData;
 }
 
 async function executeTransactionOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('beamApi') as any;
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('beamApi') as any;
+  const baseUrl = credentials.baseUrl || 'https://api.beam.mw/v1';
 
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
 
-      switch (operation) {
+			switch (operation) {
+				case 'sendTransaction': {
+					const walletId = this.getNodeParameter('walletId', i) as string;
+					const amount = this.getNodeParameter('amount', i) as number;
+					const recipient = this.getNodeParameter('recipient', i) as string;
+					const fee = this.getNodeParameter('fee', i) as number;
+
+					const body: any = {
+						walletId,
+						amount,
+						recipient
+					};
+
+					if (fee > 0) {
+						body.fee = fee;
+					}
+
+					const options: any = {
+						method: 'POST',
+						url: `${baseUrl}/transaction/send`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json'
+						},
+						body,
+						json: true
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getTransaction': {
+					const txId = this.getNodeParameter('txId', i) as string;
+
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/transaction/${txId}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`
+						},
+						json: true
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getTransactionHistory': {
+					const walletId = this.getNodeParameter('walletId', i) as string;
+					const limit = this.getNodeParameter('limit', i) as number;
+					const offset = this.getNodeParameter('offset', i) as number;
+
+					const queryParams = new URLSearchParams({
+						walletId,
+						limit: limit.toString(),
+						offset: offset.toString()
+					});
+
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/transaction?${queryParams}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`
+						},
+						json: true
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'estimateTransactionFee': {
+					const amount = this.getNodeParameter('amount', i) as number;
+					const recipient = this.getNodeParameter('recipient', i) as string;
+
+					const options: any = {
+						method: 'POST',
+						url: `${baseUrl}/transaction/estimate`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json'
+						},
+						body: {
+							amount,
+							recipient
+						},
+						json: true
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getTransactionStatus': {
+					const txId = this.getNodeParameter('txId', i) as string;
+
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/transaction/${txId}/status`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`
+						},
+						json: true
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
         case 'createTransaction': {
           const from = this.getNodeParameter('from', i) as string;
           const to = this.getNodeParameter('to', i) as string;
@@ -1419,28 +1611,12 @@ async function executeTransactionOperations(
 
           const options: any = {
             method: 'POST',
-            url: `${credentials.baseUrl}/transactions`,
+            url: `${baseUrl}/transactions`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
             body,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getTransaction': {
-          const hash = this.getNodeParameter('hash', i) as string;
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/transactions/${hash}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
             json: true,
           };
 
@@ -1473,7 +1649,7 @@ async function executeTransactionOperations(
 
           const options: any = {
             method: 'GET',
-            url: `${credentials.baseUrl}/transactions?${queryString}`,
+            url: `${baseUrl}/transactions?${queryString}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
@@ -1494,7 +1670,7 @@ async function executeTransactionOperations(
 
           const options: any = {
             method: 'POST',
-            url: `${credentials.baseUrl}/transactions/${hash}/confirm`,
+            url: `${baseUrl}/transactions/${hash}/confirm`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
@@ -1507,116 +1683,56 @@ async function executeTransactionOperations(
           break;
         }
 
-        case 'estimateTransactionFee': {
-          const from = this.getNodeParameter('from', i) as string;
-          const to = this.getNodeParameter('to', i) as string;
-          const amount = this.getNodeParameter('amount', i) as string;
-          const data = this.getNodeParameter('data', i) as string;
+				default:
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+			}
 
-          const queryParams: any = {
-            from,
-            to,
-            amount,
-          };
+			returnData.push({ json: result, pairedItem: { item: i } });
 
-          if (data) {
-            queryParams.data = data;
-          }
+		} catch (error: any) {
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message },
+					pairedItem: { item: i }
+				});
+			} else {
+				throw new NodeApiError(this.getNode(), error);
+			}
+		}
+	}
 
-          const queryString = Object.keys(queryParams)
-            .map((key: string) => `${key}=${encodeURIComponent(queryParams[key])}`)
-            .join('&');
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/transactions/estimate-fee?${queryString}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(
-            this.getNode(),
-            `Unknown operation: ${operation}`,
-          );
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
-
-  return returnData;
+	return returnData;
 }
 
-// PARSE ERROR for unknown — manual fix needed
-// Raw: // No additional imports
-
-{
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['nft'],
-    },
-  },
-  options: [
-    {
-      name: 'Mint NFT',
-      value: 'mintNft',
-      description: 'Mint a new NFT',
-     
-
-async function executeSphereMarketplaceOperations(
+async function executeAddressOperations(
   this: IExecuteFunctions,
   items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
   const returnData: INodeExecutionData[] = [];
   const operation = this.getNodeParameter('operation', 0) as string;
   const credentials = await this.getCredentials('beamApi') as any;
+  const baseUrl = credentials.baseUrl || 'https://api.beam.mw/v1';
 
   for (let i = 0; i < items.length; i++) {
     try {
       let result: any;
 
       switch (operation) {
-        case 'createListing': {
-          const tokenId = this.getNodeParameter('tokenId', i) as string;
-          const contract = this.getNodeParameter('contract', i) as string;
-          const price = this.getNodeParameter('price', i) as string;
-          const duration = this.getNodeParameter('duration', i) as number;
-
-          const body: any = {
-            tokenId,
-            contract,
-            price,
-            duration,
-          };
+        case 'generateAddress': {
+          const walletId = this.getNodeParameter('walletId', i) as string;
+          const expiration = this.getNodeParameter('expiration', i) as number;
 
           const options: any = {
             method: 'POST',
-            url: `${credentials.baseUrl}/sphere/listings`,
+            url: `${baseUrl}/address/generate`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
-            body,
+            body: {
+              walletId,
+              expiration,
+            },
             json: true,
           };
 
@@ -1624,12 +1740,12 @@ async function executeSphereMarketplaceOperations(
           break;
         }
 
-        case 'getListing': {
-          const listingId = this.getNodeParameter('listingId', i) as string;
+        case 'getAddress': {
+          const addressId = this.getNodeParameter('addressId', i) as string;
 
           const options: any = {
             method: 'GET',
-            url: `${credentials.baseUrl}/sphere/listings/${listingId}`,
+            url: `${baseUrl}/address/${addressId}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
@@ -1640,23 +1756,19 @@ async function executeSphereMarketplaceOperations(
           break;
         }
 
-        case 'getAllListings': {
-          const category = this.getNodeParameter('category', i) as string;
-          const priceMin = this.getNodeParameter('priceMin', i) as string;
-          const priceMax = this.getNodeParameter('priceMax', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          const offset = this.getNodeParameter('offset', i) as number;
+        case 'listAddresses': {
+          const walletId = this.getNodeParameter('walletId', i) as string;
+          const active = this.getNodeParameter('active', i) as boolean;
 
-          const queryParams: any = { limit, offset };
-          if (category) queryParams.category = category;
-          if (priceMin) queryParams.priceMin = priceMin;
-          if (priceMax) queryParams.priceMax = priceMax;
-
-          const queryString = new URLSearchParams(queryParams).toString();
+          const queryParams = new URLSearchParams();
+          if (walletId) {
+            queryParams.append('walletId', walletId);
+          }
+          queryParams.append('active', active.toString());
 
           const options: any = {
             method: 'GET',
-            url: `${credentials.baseUrl}/sphere/listings?${queryString}`,
+            url: `${baseUrl}/address?${queryParams.toString()}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
@@ -1667,18 +1779,22 @@ async function executeSphereMarketplaceOperations(
           break;
         }
 
-        case 'updateListing': {
-          const listingId = this.getNodeParameter('listingId', i) as string;
-          const price = this.getNodeParameter('price', i) as string;
-          const description = this.getNodeParameter('description', i) as string;
+        case 'updateAddress': {
+          const addressId = this.getNodeParameter('addressId', i) as string;
+          const label = this.getNodeParameter('label', i) as string;
+          const expiration = this.getNodeParameter('expiration', i) as number;
 
           const body: any = {};
-          if (price) body.price = price;
-          if (description) body.description = description;
+          if (label) {
+            body.label = label;
+          }
+          if (expiration) {
+            body.expiration = expiration;
+          }
 
           const options: any = {
             method: 'PUT',
-            url: `${credentials.baseUrl}/sphere/listings/${listingId}`,
+            url: `${baseUrl}/address/${addressId}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
@@ -1691,35 +1807,12 @@ async function executeSphereMarketplaceOperations(
           break;
         }
 
-        case 'buyListing': {
-          const listingId = this.getNodeParameter('listingId', i) as string;
-          const buyerAddress = this.getNodeParameter('buyerAddress', i) as string;
-
-          const body: any = {
-            buyerAddress,
-          };
-
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/sphere/listings/${listingId}/buy`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'cancelListing': {
-          const listingId = this.getNodeParameter('listingId', i) as string;
+        case 'expireAddress': {
+          const addressId = this.getNodeParameter('addressId', i) as string;
 
           const options: any = {
             method: 'DELETE',
-            url: `${credentials.baseUrl}/sphere/listings/${listingId}`,
+            url: `${baseUrl}/address/${addressId}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
@@ -1753,40 +1846,37 @@ async function executeSphereMarketplaceOperations(
   return returnData;
 }
 
-async function executeGamingOperations(
+async function executeAssetOperations(
   this: IExecuteFunctions,
   items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
   const returnData: INodeExecutionData[] = [];
   const operation = this.getNodeParameter('operation', 0) as string;
   const credentials = await this.getCredentials('beamApi') as any;
+  const baseUrl = credentials.baseUrl || 'https://api.beam.mw/v1';
 
   for (let i = 0; i < items.length; i++) {
     try {
       let result: any;
 
       switch (operation) {
-        case 'createGameAsset': {
-          const gameId = this.getNodeParameter('gameId', i) as string;
-          const assetType = this.getNodeParameter('assetType', i) as string;
-          const metadata = this.getNodeParameter('metadata', i) as any;
-          const owner = this.getNodeParameter('owner', i) as string;
-
-          const body: any = {
-            gameId,
-            assetType,
-            metadata: typeof metadata === 'string' ? JSON.parse(metadata) : metadata,
-            owner,
-          };
+        case 'createAsset': {
+          const walletId = this.getNodeParameter('walletId', i) as string;
+          const metadata = this.getNodeParameter('metadata', i) as string;
+          const amount = this.getNodeParameter('amount', i) as number;
 
           const options: any = {
             method: 'POST',
-            url: `${credentials.baseUrl}/gaming/assets`,
+            url: `${baseUrl}/asset/create`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
-            body,
+            body: {
+              walletId,
+              metadata,
+              amount,
+            },
             json: true,
           };
 
@@ -1794,12 +1884,12 @@ async function executeGamingOperations(
           break;
         }
 
-        case 'getGameAsset': {
+        case 'getAsset': {
           const assetId = this.getNodeParameter('assetId', i) as string;
 
           const options: any = {
             method: 'GET',
-            url: `${credentials.baseUrl}/gaming/assets/${assetId}`,
+            url: `${baseUrl}/asset/${assetId}`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
             },
@@ -1810,26 +1900,21 @@ async function executeGamingOperations(
           break;
         }
 
-        case 'getAllGameAssets': {
-          const gameId = this.getNodeParameter('gameId', i) as string;
-          const playerId = this.getNodeParameter('playerId', i) as string;
+        case 'listAssets': {
+          const walletId = this.getNodeParameter('walletId', i) as string;
           const limit = this.getNodeParameter('limit', i) as number;
           const offset = this.getNodeParameter('offset', i) as number;
 
-          const queryParams: any = {};
-          if (gameId) queryParams.gameId = gameId;
-          if (playerId) queryParams.playerId = playerId;
-          if (limit) queryParams.limit = limit.toString();
-          if (offset) queryParams.offset = offset.toString();
-
-          const queryString = new URLSearchParams(queryParams).toString();
-          const url = `${credentials.baseUrl}/gaming/assets${queryString ? `?${queryString}` : ''}`;
-
           const options: any = {
             method: 'GET',
-            url,
+            url: `${baseUrl}/asset`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
+            },
+            qs: {
+              walletId,
+              limit,
+              offset,
             },
             json: true,
           };
@@ -1838,53 +1923,21 @@ async function executeGamingOperations(
           break;
         }
 
-        case 'updateGameAsset': {
+        case 'mintAsset': {
           const assetId = this.getNodeParameter('assetId', i) as string;
-          const metadata = this.getNodeParameter('metadata', i) as any;
-          const stats = this.getNodeParameter('stats', i) as any;
-
-          const body: any = {};
-          if (metadata) {
-            body.metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-          }
-          if (stats) {
-            body.stats = typeof stats === 'string' ? JSON.parse(stats) : stats;
-          }
-
-          const options: any = {
-            method: 'PUT',
-            url: `${credentials.baseUrl}/gaming/assets/${assetId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'createAchievement': {
-          const playerId = this.getNodeParameter('playerId', i) as string;
-          const achievementId = this.getNodeParameter('achievementId', i) as string;
-          const gameId = this.getNodeParameter('gameId', i) as string;
-
-          const body: any = {
-            playerId,
-            achievementId,
-            gameId,
-          };
+          const amount = this.getNodeParameter('amount', i) as number;
 
           const options: any = {
             method: 'POST',
-            url: `${credentials.baseUrl}/gaming/achievements`,
+            url: `${baseUrl}/asset/mint`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
               'Content-Type': 'application/json',
             },
-            body,
+            body: {
+              assetId,
+              amount,
+            },
             json: true,
           };
 
@@ -1892,24 +1945,20 @@ async function executeGamingOperations(
           break;
         }
 
-        case 'getLeaderboard': {
-          const gameId = this.getNodeParameter('gameId', i) as string;
-          const metric = this.getNodeParameter('metric', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-
-          const queryParams: any = {
-            metric,
-          };
-          if (limit) queryParams.limit = limit.toString();
-
-          const queryString = new URLSearchParams(queryParams).toString();
-          const url = `${credentials.baseUrl}/gaming/leaderboard/${gameId}?${queryString}`;
+        case 'burnAsset': {
+          const assetId = this.getNodeParameter('assetId', i) as string;
+          const amount = this.getNodeParameter('amount', i) as number;
 
           const options: any = {
-            method: 'GET',
-            url,
+            method: 'POST',
+            url: `${baseUrl}/asset/burn`,
             headers: {
               'Authorization': `Bearer ${credentials.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: {
+              assetId,
+              amount,
             },
             json: true,
           };
@@ -1922,175 +1971,10 @@ async function executeGamingOperations(
           throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
       }
 
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
-
-  return returnData;
-}
-
-async function executeDeFiOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('beamApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-
-      switch (operation) {
-        case 'stakeTokens': {
-          const amount = this.getNodeParameter('amount', i) as string;
-          const tokenAddress = this.getNodeParameter('tokenAddress', i) as string;
-          const protocol = this.getNodeParameter('protocol', i) as string;
-          const duration = this.getNodeParameter('duration', i) as number;
-
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/defi/stake`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: {
-              amount,
-              tokenAddress,
-              protocol,
-              duration,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getStake': {
-          const stakeId = this.getNodeParameter('stakeId', i) as string;
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/defi/stakes/${stakeId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAllStakes': {
-          const userAddress = this.getNodeParameter('userAddress', i) as string;
-          const protocol = this.getNodeParameter('protocol', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          const offset = this.getNodeParameter('offset', i) as number;
-
-          const queryParams = new URLSearchParams();
-          queryParams.append('userAddress', userAddress);
-          if (protocol) queryParams.append('protocol', protocol);
-          queryParams.append('limit', limit.toString());
-          queryParams.append('offset', offset.toString());
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/defi/stakes?${queryParams.toString()}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'unstakeTokens': {
-          const stakeId = this.getNodeParameter('stakeId', i) as string;
-          const amount = this.getNodeParameter('amount', i) as string;
-
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/defi/unstake`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: {
-              stakeId,
-              amount,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getLiquidityPools': {
-          const tokenA = this.getNodeParameter('tokenA', i) as string;
-          const tokenB = this.getNodeParameter('tokenB', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          const offset = this.getNodeParameter('offset', i) as number;
-
-          const queryParams = new URLSearchParams();
-          if (tokenA) queryParams.append('tokenA', tokenA);
-          if (tokenB) queryParams.append('tokenB', tokenB);
-          queryParams.append('limit', limit.toString());
-          queryParams.append('offset', offset.toString());
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/defi/pools?${queryParams.toString()}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'addLiquidity': {
-          const poolId = this.getNodeParameter('poolId', i) as string;
-          const amountA = this.getNodeParameter('amountA', i) as string;
-          const amountB = this.getNodeParameter('amountB', i) as string;
-
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/defi/pools/add-liquidity`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: {
-              poolId,
-              amountA,
-              amountB,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
+      returnData.push({
+        json: result,
+        pairedItem: { item: i },
+      });
     } catch (error: any) {
       if (this.continueOnFail()) {
         returnData.push({
@@ -2105,3 +1989,131 @@ async function executeDeFiOperations(
 
   return returnData;
 }
+
+async function executeNodeOperations(
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('beamApi') as any;
+  const baseUrl = credentials.baseUrl || 'https://api.beam.mw/v1';
+
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
+
+			switch (operation) {
+				case 'getNodeStatus': {
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/node/status`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getNodePeers': {
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/node/peers`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getBlocks': {
+					const limit = this.getNodeParameter('limit', i) as number;
+					const height = this.getNodeParameter('height', i) as number;
+					
+					const queryParams = new URLSearchParams();
+					if (limit) queryParams.append('limit', limit.toString());
+					if (height) queryParams.append('height', height.toString());
+					
+					const queryString = queryParams.toString();
+					const url = queryString 
+						? `${baseUrl}/node/blocks?${queryString}`
+						: `${baseUrl}/node/blocks`;
+
+					const options: any = {
+						method: 'GET',
+						url,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getBlock': {
+					const blockHeight = this.getNodeParameter('blockHeight', i) as number;
+					
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/node/block/${blockHeight}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getMiningInfo': {
+					const options: any = {
+						method: 'GET',
+						url: `${baseUrl}/node/mining`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				default:
+					throw new NodeOperationError(
+						this.getNode(),
+						`Unknown operation: ${operation}`,
+					);
+			}
+
+			returnData.push({
+				json: result,
+				pairedItem: { item: i },
+			});
+		} catch (error: any) {
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message },
+					pairedItem: { item: i },
+				});
+			} else {
+				throw new NodeApiError(this.getNode(), error);
+			}
+		}
+	}
+
+	return returnData;
+}
+
+async function executeSphereMarketplaceOperations(
+  this: IExecuteFunctions,
+  items
