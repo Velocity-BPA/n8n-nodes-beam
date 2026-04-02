@@ -33,20 +33,20 @@ describe('Beam Node', () => {
       expect(node.description.outputs).toContain('main');
     });
 
-    it('should define 6 resources', () => {
+    it('should define 5 resources', () => {
       const resourceProp = node.description.properties.find(
         (p: any) => p.name === 'resource'
       );
       expect(resourceProp).toBeDefined();
       expect(resourceProp!.type).toBe('options');
-      expect(resourceProp!.options).toHaveLength(6);
+      expect(resourceProp!.options).toHaveLength(5);
     });
 
     it('should have operation dropdowns for each resource', () => {
       const operations = node.description.properties.filter(
         (p: any) => p.name === 'operation'
       );
-      expect(operations.length).toBe(6);
+      expect(operations.length).toBe(5);
     });
 
     it('should require credentials', () => {
@@ -69,445 +69,300 @@ describe('Beam Node', () => {
   // Resource-specific tests
 describe('Wallet Resource', () => {
   let mockExecuteFunctions: any;
-
+  
   beforeEach(() => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.beam.eco/v1',
+      getCredentials: jest.fn().mockResolvedValue({ 
+        apiKey: 'test-key', 
+        baseUrl: 'https://api.beam.mw/v1' 
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
       continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
+      helpers: { 
         httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
+        requestWithAuthentication: jest.fn() 
       },
     };
   });
 
-  test('createWallet should create a new wallet successfully', async () => {
-    const mockResponse = {
-      address: '0x1234567890123456789012345678901234567890',
-      network: 'ethereum',
-      type: 'standard',
-    };
+  describe('createWallet', () => {
+    it('should create a wallet successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('createWallet')
+        .mockReturnValueOnce('test-seed-phrase')
+        .mockReturnValueOnce('test-password');
+      
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ 
+        walletId: 'wallet-123',
+        status: 'created' 
+      });
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'createWallet';
-        case 'network': return 'ethereum';
-        case 'type': return 'standard';
-        default: return null;
-      }
+      const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      
+      expect(result[0].json.walletId).toBe('wallet-123');
+      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: 'https://api.beam.mw/v1/wallet/create',
+        headers: {
+          'Authorization': 'Bearer test-key',
+          'Content-Type': 'application/json',
+        },
+        body: {
+          seed: 'test-seed-phrase',
+          password: 'test-password',
+        },
+        json: true,
+      });
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+    it('should handle createWallet errors', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('createWallet')
+        .mockReturnValueOnce('test-seed')
+        .mockReturnValueOnce('test-password');
+      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+      
+      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
 
-    const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/wallets',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-      body: {
-        network: 'ethereum',
-        type: 'standard',
-      },
-    });
-  });
-
-  test('getWallet should retrieve wallet details', async () => {
-    const mockResponse = {
-      address: '0x1234567890123456789012345678901234567890',
-      network: 'ethereum',
-      balance: '1000000000000000000',
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getWallet';
-        case 'address': return '0x1234567890123456789012345678901234567890';
-        default: return null;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/wallets/0x1234567890123456789012345678901234567890',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
+      const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      
+      expect(result[0].json.error).toBe('API Error');
     });
   });
 
-  test('getWalletBalance should retrieve wallet balance', async () => {
-    const mockResponse = {
-      balance: '5000000000000000000',
-      tokenAddress: '0xA0b86a33E6441f8312ED4D17C9E7F82a4C1E1234',
-    };
+  describe('getWallet', () => {
+    it('should get wallet information successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getWallet')
+        .mockReturnValueOnce('wallet-123');
+      
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ 
+        walletId: 'wallet-123',
+        balance: 100 
+      });
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getWalletBalance';
-        case 'address': return '0x1234567890123456789012345678901234567890';
-        case 'tokenAddress': return '0xA0b86a33E6441f8312ED4D17C9E7F82a4C1E1234';
-        default: return null;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/wallets/0x1234567890123456789012345678901234567890/balance?tokenAddress=0xA0b86a33E6441f8312ED4D17C9E7F82a4C1E1234',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
+      const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      
+      expect(result[0].json.walletId).toBe('wallet-123');
     });
   });
 
-  test('transferTokens should transfer tokens successfully', async () => {
-    const mockResponse = {
-      txHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-      status: 'pending',
-    };
+  describe('listWallets', () => {
+    it('should list wallets with pagination', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('listWallets')
+        .mockReturnValueOnce(10)
+        .mockReturnValueOnce(0);
+      
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ 
+        wallets: [],
+        total: 0 
+      });
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'transferTokens';
-        case 'address': return '0x1234567890123456789012345678901234567890';
-        case 'to': return '0x9876543210987654321098765432109876543210';
-        case 'amount': return '1000000000000000000';
-        case 'tokenAddress': return '0xA0b86a33E6441f8312ED4D17C9E7F82a4C1E1234';
-        default: return null;
-      }
+      const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      
+      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: 'https://api.beam.mw/v1/wallet',
+        headers: {
+          'Authorization': 'Bearer test-key',
+        },
+        qs: {
+          limit: 10,
+          offset: 0,
+        },
+        json: true,
+      });
     });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/wallets/0x1234567890123456789012345678901234567890/transfer',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-      body: {
-        to: '0x9876543210987654321098765432109876543210',
-        amount: '1000000000000000000',
-        tokenAddress: '0xA0b86a33E6441f8312ED4D17C9E7F82a4C1E1234',
-      },
-    });
-  });
-
-  test('should handle API errors properly', async () => {
-    const mockError = new Error('API Error: Wallet not found');
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getWallet';
-        case 'address': return '0xinvalidaddress';
-        default: return null;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-    await expect(
-      executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }])
-    ).rejects.toThrow(mockError);
-  });
-
-  test('should continue on fail when configured', async () => {
-    const mockError = new Error('API Error');
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getWallet';
-        case 'address': return '0xinvalidaddress';
-        default: return null;
-      }
-    });
-
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-    const result = await executeWalletOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result[0].json).toEqual({ error: 'API Error' });
-    expect(result[0].pairedItem).toEqual({ item: 0 });
   });
 });
 
 describe('Transaction Resource', () => {
-  let mockExecuteFunctions: any;
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.beam.eco/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-api-key',
+				baseUrl: 'https://api.beam.mw/v1'
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn()
+			}
+		};
+	});
 
-  test('should create transaction successfully', async () => {
-    const mockResponse = {
-      hash: '0x123456789abcdef',
-      status: 'pending',
-      from: '0xfrom',
-      to: '0xto',
-      amount: '1000000000000000000',
-    };
+	describe('sendTransaction operation', () => {
+		it('should send transaction successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('sendTransaction')
+				.mockReturnValueOnce('wallet123')
+				.mockReturnValueOnce(100)
+				.mockReturnValueOnce('recipient-address')
+				.mockReturnValueOnce(0.01);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'createTransaction';
-        case 'from': return '0xfrom';
-        case 'to': return '0xto';
-        case 'amount': return '1000000000000000000';
-        case 'data': return '';
-        default: return '';
-      }
-    });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				txId: 'tx123',
+				status: 'pending'
+			});
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			const result = await executeTransactionOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }]
+			);
 
-    const items = [{ json: {} }];
-    const result = await executeTransactionOperations.call(mockExecuteFunctions, items);
+			expect(result).toEqual([{
+				json: { txId: 'tx123', status: 'pending' },
+				pairedItem: { item: 0 }
+			}]);
+		});
 
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/transactions',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        from: '0xfrom',
-        to: '0xto',
-        amount: '1000000000000000000',
-      },
-      json: true,
-    });
-  });
+		it('should handle send transaction error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('sendTransaction')
+				.mockReturnValueOnce('wallet123')
+				.mockReturnValueOnce(100)
+				.mockReturnValueOnce('invalid-address')
+				.mockReturnValueOnce(0.01);
 
-  test('should get transaction by hash successfully', async () => {
-    const mockResponse = {
-      hash: '0x123456789abcdef',
-      status: 'confirmed',
-      confirmations: 12,
-      blockNumber: 12345,
-    };
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
+				new Error('Invalid recipient address')
+			);
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getTransaction';
-        case 'hash': return '0x123456789abcdef';
-        default: return '';
-      }
-    });
+			const result = await executeTransactionOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }]
+			);
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			expect(result).toEqual([{
+				json: { error: 'Invalid recipient address' },
+				pairedItem: { item: 0 }
+			}]);
+		});
+	});
 
-    const items = [{ json: {} }];
-    const result = await executeTransactionOperations.call(mockExecuteFunctions, items);
+	describe('getTransaction operation', () => {
+		it('should get transaction successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getTransaction')
+				.mockReturnValueOnce('tx123');
 
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/transactions/0x123456789abcdef',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-  });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				txId: 'tx123',
+				amount: 100,
+				status: 'confirmed'
+			});
 
-  test('should get all transactions with filters', async () => {
-    const mockResponse = {
-      transactions: [],
-      total: 0,
-      page: 1,
-    };
+			const result = await executeTransactionOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }]
+			);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAllTransactions';
-        case 'address': return '0xaddress';
-        case 'limit': return 20;
-        case 'offset': return 0;
-        case 'status': return 'confirmed';
-        default: return '';
-      }
-    });
+			expect(result).toEqual([{
+				json: { txId: 'tx123', amount: 100, status: 'confirmed' },
+				pairedItem: { item: 0 }
+			}]);
+		});
+	});
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+	describe('getTransactionHistory operation', () => {
+		it('should get transaction history successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getTransactionHistory')
+				.mockReturnValueOnce('wallet123')
+				.mockReturnValueOnce(50)
+				.mockReturnValueOnce(0);
 
-    const items = [{ json: {} }];
-    const result = await executeTransactionOperations.call(mockExecuteFunctions, items);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				transactions: [
+					{ txId: 'tx1', amount: 100 },
+					{ txId: 'tx2', amount: 50 }
+				]
+			});
 
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/transactions?limit=20&offset=0&address=0xaddress&status=confirmed',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-  });
+			const result = await executeTransactionOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }]
+			);
 
-  test('should confirm transaction successfully', async () => {
-    const mockResponse = {
-      hash: '0x123456789abcdef',
-      confirmed: true,
-      confirmations: 6,
-    };
+			expect(result).toEqual([{
+				json: {
+					transactions: [
+						{ txId: 'tx1', amount: 100 },
+						{ txId: 'tx2', amount: 50 }
+					]
+				},
+				pairedItem: { item: 0 }
+			}]);
+		});
+	});
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'confirmTransaction';
-        case 'hash': return '0x123456789abcdef';
-        case 'confirmations': return 6;
-        default: return '';
-      }
-    });
+	describe('estimateTransactionFee operation', () => {
+		it('should estimate fee successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('estimateTransactionFee')
+				.mockReturnValueOnce(100)
+				.mockReturnValueOnce('recipient-address');
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				estimatedFee: 0.01,
+				currency: 'BEAM'
+			});
 
-    const items = [{ json: {} }];
-    const result = await executeTransactionOperations.call(mockExecuteFunctions, items);
+			const result = await executeTransactionOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }]
+			);
 
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/transactions/0x123456789abcdef/confirm',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        confirmations: 6,
-      },
-      json: true,
-    });
-  });
+			expect(result).toEqual([{
+				json: { estimatedFee: 0.01, currency: 'BEAM' },
+				pairedItem: { item: 0 }
+			}]);
+		});
+	});
 
-  test('should estimate transaction fee successfully', async () => {
-    const mockResponse = {
-      gasPrice: '20000000000',
-      gasLimit: '21000',
-      estimatedFee: '420000000000000',
-    };
+	describe('getTransactionStatus operation', () => {
+		it('should get transaction status successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getTransactionStatus')
+				.mockReturnValueOnce('tx123');
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'estimateTransactionFee';
-        case 'from': return '0xfrom';
-        case 'to': return '0xto';
-        case 'amount': return '1000000000000000000';
-        case 'data': return '';
-        default: return '';
-      }
-    });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				txId: 'tx123',
+				status: 'confirmed',
+				confirmations: 6
+			});
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			const result = await executeTransactionOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }]
+			);
 
-    const items = [{ json: {} }];
-    const result = await executeTransactionOperations.call(mockExecuteFunctions, items);
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/transactions/estimate-fee?from=0xfrom&to=0xto&amount=1000000000000000000',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-  });
-
-  test('should handle API errors', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getTransaction';
-        case 'hash': return '0xinvalid';
-        default: return '';
-      }
-    });
-
-    const apiError = new Error('Transaction not found');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-    const items = [{ json: {} }];
-
-    await expect(
-      executeTransactionOperations.call(mockExecuteFunctions, items),
-    ).rejects.toThrow();
-  });
-
-  test('should continue on fail when configured', async () => {
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getTransaction';
-        case 'hash': return '0xinvalid';
-        default: return '';
-      }
-    });
-
-    const apiError = new Error('Transaction not found');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-    const items = [{ json: {} }];
-    const result = await executeTransactionOperations.call(mockExecuteFunctions, items);
-
-    expect(result).toEqual([
-      { json: { error: 'Transaction not found' }, pairedItem: { item: 0 } },
-    ]);
-  });
+			expect(result).toEqual([{
+				json: { txId: 'tx123', status: 'confirmed', confirmations: 6 },
+				pairedItem: { item: 0 }
+			}]);
+		});
+	});
 });
 
-describe('SphereMarketplace Resource', () => {
+describe('Address Resource', () => {
   let mockExecuteFunctions: any;
 
   beforeEach(() => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
       getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.beam.eco/v1',
+        apiKey: 'test-key',
+        baseUrl: 'https://api.beam.mw/v1',
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
@@ -519,784 +374,466 @@ describe('SphereMarketplace Resource', () => {
     };
   });
 
-  test('should create NFT listing successfully', async () => {
-    const mockListing = {
-      listingId: 'listing-123',
-      tokenId: '1',
-      contract: '0x123...',
-      price: '1.5',
-      status: 'active',
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'createListing';
-        case 'tokenId': return '1';
-        case 'contract': return '0x123...';
-        case 'price': return '1.5';
-        case 'duration': return 86400;
-        default: return undefined;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockListing);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: mockListing,
-        pairedItem: { item: 0 },
-      },
-    ]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/sphere/listings',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        tokenId: '1',
-        contract: '0x123...',
-        price: '1.5',
-        duration: 86400,
-      },
-      json: true,
-    });
-  });
-
-  test('should get listing details successfully', async () => {
-    const mockListing = {
-      listingId: 'listing-123',
-      tokenId: '1',
-      price: '1.5',
-      seller: '0xabc...',
-      status: 'active',
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getListing';
-        case 'listingId': return 'listing-123';
-        default: return undefined;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockListing);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: mockListing,
-        pairedItem: { item: 0 },
-      },
-    ]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/sphere/listings/listing-123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-  });
-
-  test('should get all listings with filters successfully', async () => {
-    const mockListings = {
-      listings: [
-        { listingId: '1', price: '1.0' },
-        { listingId: '2', price: '2.0' },
-      ],
-      total: 2,
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getAllListings';
-        case 'category': return 'art';
-        case 'priceMin': return '1.0';
-        case 'priceMax': return '5.0';
-        case 'limit': return 50;
-        case 'offset': return 0;
-        default: return undefined;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockListings);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: mockListings,
-        pairedItem: { item: 0 },
-      },
-    ]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/sphere/listings?limit=50&offset=0&category=art&priceMin=1.0&priceMax=5.0',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-  });
-
-  test('should update listing successfully', async () => {
-    const mockUpdatedListing = {
-      listingId: 'listing-123',
-      price: '2.0',
-      description: 'Updated description',
-      status: 'active',
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'updateListing';
-        case 'listingId': return 'listing-123';
-        case 'price': return '2.0';
-        case 'description': return 'Updated description';
-        default: return undefined;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockUpdatedListing);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: mockUpdatedListing,
-        pairedItem: { item: 0 },
-      },
-    ]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'PUT',
-      url: 'https://api.beam.eco/v1/sphere/listings/listing-123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        price: '2.0',
-        description: 'Updated description',
-      },
-      json: true,
-    });
-  });
-
-  test('should buy listing successfully', async () => {
-    const mockPurchase = {
-      transactionId: 'tx-123',
-      listingId: 'listing-123',
-      buyer: '0xbuyer...',
-      price: '1.5',
-      status: 'completed',
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'buyListing';
-        case 'listingId': return 'listing-123';
-        case 'buyerAddress': return '0xbuyer...';
-        default: return undefined;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockPurchase);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: mockPurchase,
-        pairedItem: { item: 0 },
-      },
-    ]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/sphere/listings/listing-123/buy',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        buyerAddress: '0xbuyer...',
-      },
-      json: true,
-    });
-  });
-
-  test('should cancel listing successfully', async () => {
-    const mockCancellation = {
-      listingId: 'listing-123',
-      status: 'cancelled',
-      cancelledAt: '2024-01-01T00:00:00Z',
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'cancelListing';
-        case 'listingId': return 'listing-123';
-        default: return undefined;
-      }
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockCancellation);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: mockCancellation,
-        pairedItem: { item: 0 },
-      },
-    ]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'DELETE',
-      url: 'https://api.beam.eco/v1/sphere/listings/listing-123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-  });
-
-  test('should handle API errors gracefully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getListing';
-        case 'listingId': return 'invalid-listing';
-        default: return undefined;
-      }
-    });
-
-    const apiError = new Error('Listing not found');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-    const result = await executeSphereMarketplaceOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }],
-    );
-
-    expect(result).toEqual([
-      {
-        json: { error: 'Listing not found' },
-        pairedItem: { item: 0 },
-      },
-    ]);
-  });
-
-  test('should throw error for unknown operation', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      if (paramName === 'operation') return 'unknownOperation';
-      return undefined;
-    });
-
-    await expect(
-      executeSphereMarketplaceOperations.call(mockExecuteFunctions, [{ json: {} }]),
-    ).rejects.toThrow('Unknown operation: unknownOperation');
-  });
-});
-
-describe('Gaming Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.beam.eco/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  test('createGameAsset should create a new game asset', async () => {
-    const mockResponse = { id: 'asset123', gameId: 'game1', assetType: 'weapon', created: true };
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'createGameAsset',
-        gameId: 'game1',
-        assetType: 'weapon',
-        metadata: '{"name": "Sword", "damage": 100}',
-        owner: 'player123',
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/gaming/assets',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        gameId: 'game1',
-        assetType: 'weapon',
-        metadata: { name: 'Sword', damage: 100 },
-        owner: 'player123',
-      },
-      json: true,
-    });
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-  });
-
-  test('getGameAsset should retrieve game asset details', async () => {
-    const mockResponse = { id: 'asset123', name: 'Epic Sword', owner: 'player123' };
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'getGameAsset',
-        assetId: 'asset123',
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/gaming/assets/asset123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-  });
-
-  test('getAllGameAssets should list game assets with filters', async () => {
-    const mockResponse = { assets: [{ id: 'asset1' }, { id: 'asset2' }], total: 2 };
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'getAllGameAssets',
-        gameId: 'game1',
-        playerId: 'player123',
-        limit: 10,
-        offset: 0,
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/gaming/assets?gameId=game1&playerId=player123&limit=10&offset=0',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-  });
-
-  test('updateGameAsset should update asset properties', async () => {
-    const mockResponse = { id: 'asset123', updated: true };
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'updateGameAsset',
-        assetId: 'asset123',
-        metadata: '{"name": "Updated Sword"}',
-        stats: '{"damage": 150}',
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'PUT',
-      url: 'https://api.beam.eco/v1/gaming/assets/asset123',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        metadata: { name: 'Updated Sword' },
-        stats: { damage: 150 },
-      },
-      json: true,
-    });
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-  });
-
-  test('createAchievement should award achievement to player', async () => {
-    const mockResponse = { id: 'achievement123', playerId: 'player123', awarded: true };
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'createAchievement',
-        playerId: 'player123',
-        achievementId: 'first_win',
-        gameId: 'game1',
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://api.beam.eco/v1/gaming/achievements',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        playerId: 'player123',
-        achievementId: 'first_win',
-        gameId: 'game1',
-      },
-      json: true,
-    });
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-  });
-
-  test('getLeaderboard should retrieve game leaderboard', async () => {
-    const mockResponse = { leaderboard: [{ player: 'player1', score: 1000 }] };
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'getLeaderboard',
-        gameId: 'game1',
-        metric: 'score',
-        limit: 10,
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://api.beam.eco/v1/gaming/leaderboard/game1?metric=score&limit=10',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-      },
-      json: true,
-    });
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-  });
-
-  test('should handle API errors gracefully', async () => {
-    const error = new Error('API Error');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(error);
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'getGameAsset',
-        assetId: 'invalid',
-      };
-      return params[param];
-    });
-
-    const result = await executeGamingOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
-  });
-});
-
-describe('DeFi Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://api.beam.eco/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('stakeTokens', () => {
-    it('should stake tokens successfully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'stakeTokens';
-          case 'amount': return '1000';
-          case 'tokenAddress': return '0x123...abc';
-          case 'protocol': return 'compound';
-          case 'duration': return 30;
-          default: return undefined;
-        }
-      });
+  describe('generateAddress operation', () => {
+    it('should generate address successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('generateAddress')
+        .mockReturnValueOnce('wallet-123')
+        .mockReturnValueOnce(3600);
 
       const mockResponse = {
-        success: true,
-        stakeId: 'stake_123',
-        transactionHash: '0xabc...def',
+        addressId: 'addr-123',
+        address: 'beam-address-123',
+        walletId: 'wallet-123',
+        expiration: 3600,
       };
 
       mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
       const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
+      const result = await executeAddressOperations.call(mockExecuteFunctions, items);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://api.beam.eco/v1/defi/stake',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: {
-          amount: '1000',
-          tokenAddress: '0x123...abc',
-          protocol: 'compound',
-          duration: 30,
-        },
-        json: true,
-      });
+      expect(result).toEqual([{
+        json: mockResponse,
+        pairedItem: { item: 0 },
+      }]);
     });
-  });
 
-  describe('getStake', () => {
-    it('should get stake details successfully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getStake';
-          case 'stakeId': return 'stake_123';
-          default: return undefined;
-        }
-      });
+    it('should handle generateAddress error', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('generateAddress')
+        .mockReturnValueOnce('wallet-123')
+        .mockReturnValueOnce(3600);
 
-      const mockResponse = {
-        stakeId: 'stake_123',
-        amount: '1000',
-        protocol: 'compound',
-        status: 'active',
-        rewards: '50',
-      };
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://api.beam.eco/v1/defi/stakes/stake_123',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-        },
-        json: true,
-      });
-    });
-  });
-
-  describe('getAllStakes', () => {
-    it('should list user stakes successfully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getAllStakes';
-          case 'userAddress': return '0xuser123';
-          case 'protocol': return 'compound';
-          case 'limit': return 10;
-          case 'offset': return 0;
-          default: return undefined;
-        }
-      });
-
-      const mockResponse = {
-        stakes: [
-          { stakeId: 'stake_1', amount: '1000' },
-          { stakeId: 'stake_2', amount: '2000' },
-        ],
-        total: 2,
-      };
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
-
-  describe('unstakeTokens', () => {
-    it('should unstake tokens successfully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'unstakeTokens';
-          case 'stakeId': return 'stake_123';
-          case 'amount': return '500';
-          default: return undefined;
-        }
-      });
-
-      const mockResponse = {
-        success: true,
-        transactionHash: '0xdef...ghi',
-        unstakedAmount: '500',
-      };
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
-
-  describe('getLiquidityPools', () => {
-    it('should get liquidity pools successfully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getLiquidityPools';
-          case 'tokenA': return '0xtoken1';
-          case 'tokenB': return '0xtoken2';
-          case 'limit': return 20;
-          case 'offset': return 0;
-          default: return undefined;
-        }
-      });
-
-      const mockResponse = {
-        pools: [
-          { poolId: 'pool_1', tokenA: '0xtoken1', tokenB: '0xtoken2', tvl: '1000000' },
-        ],
-        total: 1,
-      };
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
-
-  describe('addLiquidity', () => {
-    it('should add liquidity successfully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'addLiquidity';
-          case 'poolId': return 'pool_123';
-          case 'amountA': return '1000';
-          case 'amountB': return '2000';
-          default: return undefined;
-        }
-      });
-
-      const mockResponse = {
-        success: true,
-        transactionHash: '0xliquidity123',
-        lpTokensReceived: '1500',
-      };
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
-
-  describe('error handling', () => {
-    it('should handle API errors', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'stakeTokens';
-        return 'test-value';
-      });
-
-      const error = new Error('API Error');
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(error);
+      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
       mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
       const items = [{ json: {} }];
-      const result = await executeDeFiOperations.call(mockExecuteFunctions, items);
+      const result = await executeAddressOperations.call(mockExecuteFunctions, items);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json.error).toBe('API Error');
-    });
-
-    it('should throw error for unknown operation', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'unknownOperation';
-        return 'test-value';
-      });
-
-      const items = [{ json: {} }];
-
-      await expect(executeDeFiOperations.call(mockExecuteFunctions, items))
-        .rejects
-        .toThrow('Unknown operation: unknownOperation');
+      expect(result).toEqual([{
+        json: { error: 'API Error' },
+        pairedItem: { item: 0 },
+      }]);
     });
   });
+
+  describe('getAddress operation', () => {
+    it('should get address successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getAddress')
+        .mockReturnValueOnce('addr-123');
+
+      const mockResponse = {
+        addressId: 'addr-123',
+        address: 'beam-address-123',
+        walletId: 'wallet-123',
+        status: 'active',
+      };
+
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+      const items = [{ json: {} }];
+      const result = await executeAddressOperations.call(mockExecuteFunctions, items);
+
+      expect(result).toEqual([{
+        json: mockResponse,
+        pairedItem: { item: 0 },
+      }]);
+    });
+  });
+
+  describe('listAddresses operation', () => {
+    it('should list addresses successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('listAddresses')
+        .mockReturnValueOnce('wallet-123')
+        .mockReturnValueOnce(true);
+
+      const mockResponse = {
+        addresses: [
+          { addressId: 'addr-1', address: 'beam-address-1' },
+          { addressId: 'addr-2', address: 'beam-address-2' },
+        ],
+      };
+
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+      const items = [{ json: {} }];
+      const result = await executeAddressOperations.call(mockExecuteFunctions, items);
+
+      expect(result).toEqual([{
+        json: mockResponse,
+        pairedItem: { item: 0 },
+      }]);
+    });
+  });
+
+  describe('updateAddress operation', () => {
+    it('should update address successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('updateAddress')
+        .mockReturnValueOnce('addr-123')
+        .mockReturnValueOnce('Updated Label')
+        .mockReturnValueOnce(7200);
+
+      const mockResponse = {
+        addressId: 'addr-123',
+        label: 'Updated Label',
+        expiration: 7200,
+      };
+
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+      const items = [{ json: {} }];
+      const result = await executeAddressOperations.call(mockExecuteFunctions, items);
+
+      expect(result).toEqual([{
+        json: mockResponse,
+        pairedItem: { item: 0 },
+      }]);
+    });
+  });
+
+  describe('expireAddress operation', () => {
+    it('should expire address successfully', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('expireAddress')
+        .mockReturnValueOnce('addr-123');
+
+      const mockResponse = {
+        success: true,
+        message: 'Address expired successfully',
+      };
+
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+      const items = [{ json: {} }];
+      const result = await executeAddressOperations.call(mockExecuteFunctions, items);
+
+      expect(result).toEqual([{
+        json: mockResponse,
+        pairedItem: { item: 0 },
+      }]);
+    });
+  });
+});
+
+describe('Asset Resource', () => {
+  let mockExecuteFunctions: any;
+
+  beforeEach(() => {
+    mockExecuteFunctions = {
+      getNodeParameter: jest.fn(),
+      getCredentials: jest.fn().mockResolvedValue({
+        apiKey: 'test-key',
+        baseUrl: 'https://api.beam.mw/v1',
+      }),
+      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+      continueOnFail: jest.fn().mockReturnValue(false),
+      helpers: {
+        httpRequest: jest.fn(),
+        requestWithAuthentication: jest.fn(),
+      },
+    };
+  });
+
+  it('should create asset successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('createAsset')
+      .mockReturnValueOnce('wallet123')
+      .mockReturnValueOnce('{"name":"TestAsset"}')
+      .mockReturnValueOnce(1000);
+
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      assetId: 'asset123',
+      status: 'created',
+    });
+
+    const result = await executeAssetOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'POST',
+      url: 'https://api.beam.mw/v1/asset/create',
+      headers: {
+        'Authorization': 'Bearer test-key',
+        'Content-Type': 'application/json',
+      },
+      body: {
+        walletId: 'wallet123',
+        metadata: '{"name":"TestAsset"}',
+        amount: 1000,
+      },
+      json: true,
+    });
+
+    expect(result).toEqual([
+      {
+        json: { assetId: 'asset123', status: 'created' },
+        pairedItem: { item: 0 },
+      },
+    ]);
+  });
+
+  it('should get asset successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getAsset')
+      .mockReturnValueOnce('asset123');
+
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      assetId: 'asset123',
+      metadata: '{"name":"TestAsset"}',
+      totalSupply: 1000,
+    });
+
+    const result = await executeAssetOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'GET',
+      url: 'https://api.beam.mw/v1/asset/asset123',
+      headers: {
+        'Authorization': 'Bearer test-key',
+      },
+      json: true,
+    });
+
+    expect(result).toEqual([
+      {
+        json: {
+          assetId: 'asset123',
+          metadata: '{"name":"TestAsset"}',
+          totalSupply: 1000,
+        },
+        pairedItem: { item: 0 },
+      },
+    ]);
+  });
+
+  it('should handle errors when continuing on fail', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('createAsset');
+    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+
+    const result = await executeAssetOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toEqual([
+      {
+        json: { error: 'API Error' },
+        pairedItem: { item: 0 },
+      },
+    ]);
+  });
+
+  it('should mint asset tokens successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('mintAsset')
+      .mockReturnValueOnce('asset123')
+      .mockReturnValueOnce(500);
+
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      transactionId: 'tx123',
+      status: 'pending',
+    });
+
+    const result = await executeAssetOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'POST',
+      url: 'https://api.beam.mw/v1/asset/mint',
+      headers: {
+        'Authorization': 'Bearer test-key',
+        'Content-Type': 'application/json',
+      },
+      body: {
+        assetId: 'asset123',
+        amount: 500,
+      },
+      json: true,
+    });
+
+    expect(result).toEqual([
+      {
+        json: { transactionId: 'tx123', status: 'pending' },
+        pairedItem: { item: 0 },
+      },
+    ]);
+  });
+
+  it('should burn asset tokens successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('burnAsset')
+      .mockReturnValueOnce('asset123')
+      .mockReturnValueOnce(200);
+
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      transactionId: 'tx456',
+      status: 'pending',
+    });
+
+    const result = await executeAssetOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'POST',
+      url: 'https://api.beam.mw/v1/asset/burn',
+      headers: {
+        'Authorization': 'Bearer test-key',
+        'Content-Type': 'application/json',
+      },
+      body: {
+        assetId: 'asset123',
+        amount: 200,
+      },
+      json: true,
+    });
+
+    expect(result).toEqual([
+      {
+        json: { transactionId: 'tx456', status: 'pending' },
+        pairedItem: { item: 0 },
+      },
+    ]);
+  });
+});
+
+describe('Node Resource', () => {
+	let mockExecuteFunctions: any;
+
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://api.beam.mw/v1',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
+
+	describe('getNodeStatus', () => {
+		it('should get node status successfully', async () => {
+			const mockResponse = { status: 'synced', height: 12345 };
+			mockExecuteFunctions.getNodeParameter.mockReturnValue('getNodeStatus');
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeNodeOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			}]);
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.beam.mw/v1/node/status',
+				headers: {
+					'Authorization': 'Bearer test-key',
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			});
+		});
+
+		it('should handle errors when getting node status', async () => {
+			mockExecuteFunctions.getNodeParameter.mockReturnValue('getNodeStatus');
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+			const result = await executeNodeOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{
+				json: { error: 'API Error' },
+				pairedItem: { item: 0 },
+			}]);
+		});
+	});
+
+	describe('getNodePeers', () => {
+		it('should get node peers successfully', async () => {
+			const mockResponse = { peers: [{ id: '1', address: '192.168.1.1' }] };
+			mockExecuteFunctions.getNodeParameter.mockReturnValue('getNodePeers');
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeNodeOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			}]);
+		});
+	});
+
+	describe('getBlocks', () => {
+		it('should get blocks with parameters successfully', async () => {
+			const mockResponse = { blocks: [{ height: 123, hash: 'abc' }] };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getBlocks')
+				.mockReturnValueOnce(10)
+				.mockReturnValueOnce(100);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeNodeOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			}]);
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.beam.mw/v1/node/blocks?limit=10&height=100',
+				headers: {
+					'Authorization': 'Bearer test-key',
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			});
+		});
+	});
+
+	describe('getBlock', () => {
+		it('should get specific block successfully', async () => {
+			const mockResponse = { height: 123, hash: 'abc123' };
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getBlock')
+				.mockReturnValueOnce(123);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeNodeOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			}]);
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.beam.mw/v1/node/block/123',
+				headers: {
+					'Authorization': 'Bearer test-key',
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			});
+		});
+	});
+
+	describe('getMiningInfo', () => {
+		it('should get mining info successfully', async () => {
+			const mockResponse = { difficulty: 1000, hashrate: 500 };
+			mockExecuteFunctions.getNodeParameter.mockReturnValue('getMiningInfo');
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeNodeOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			}]);
+		});
+	});
 });
 });
