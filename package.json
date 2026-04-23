@@ -2,7 +2,7 @@
   "name": "@velocity-bpa/n8n-nodes-beam",
   "version": "1.0.0",
   "description": "n8n node for Beam blockchain platform - wallet management and blockchain services",
-  "license": "bsl-catalog",
+  "license": "SEE LICENSE IN LICENSE.md",
   "homepage": "https://github.com/velocity-bpa/n8n-nodes-beam",
   "author": {
     "name": "Velocity BPA",
@@ -56,7 +56,7 @@
     "eslint": "^8.42.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
     "gulp": "^4.0.2",
-    "n8n-workflow": "*",
+    "n8n-workflow": "1.57.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0"
   },
